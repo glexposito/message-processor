@@ -8,7 +8,7 @@ namespace MessageProcessor.Tests;
 public class ServiceBusMessageProcessorTests
 {
     private const string TopicName = "topic.1";
-    private const string SubscriptionName = "subscription.1";
+    private const string SubscriptionName = "subscription.3";
     private readonly ServiceBusClient _client;
     private readonly ServiceBusMessageProcessor _serviceBusMessageProcessor;
 
@@ -19,41 +19,26 @@ public class ServiceBusMessageProcessorTests
     }
     
     [Fact]
-    public async Task StartAsync_ShouldProcessMessageSuccessfully()
+    public async Task StartAsync_ShouldProcessAndRemoveMessageFromSubscription_WhenProcessorIsStartedAndRun()
     {
         // Arrange
         var sender = _client.CreateSender(TopicName);
         var message = new ServiceBusMessage("prepopulated message");
         await sender.SendMessageAsync(message, TestContext.Current.CancellationToken);
+        
+        var receiver = _client.CreateReceiver(TopicName, SubscriptionName);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        var peeked = await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
+        peeked.ShouldNotBeNull(); // Ensures at least one message is present
 
         // Act
-        // await _serviceBusMessageProcessor.StartAsync(TestContext.Current.CancellationToken);
-
-        // Wait a bit for the processor to process the message
-        await Task.Delay(2000, TestContext.Current.CancellationToken);
-
-        // Assert
-        var receiver = _client.CreateReceiver(TopicName, SubscriptionName);
-        var received = await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
-        received.ShouldBeNull();
-
+        await _serviceBusMessageProcessor.StartAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         await _serviceBusMessageProcessor.StopAsync(TestContext.Current.CancellationToken);
-    }
 
-    [Fact]
-    public async Task ProcessesMessageSuccessfully()
-    {
-        // Arrange
-        var sender = _client.CreateSender(TopicName);
-        var message = new ServiceBusMessage("integration test message");
-        await sender.SendMessageAsync(message, TestContext.Current.CancellationToken);
-
-        // Act
-        var receiver = _client.CreateReceiver(TopicName, SubscriptionName);
-        var received =
-            await receiver.ReceiveMessageAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
-
-        // Assert
-        received.ShouldBeNull();
+        // Assert: Ensure no more messages remain
+        var afterProcessorReceiver = _client.CreateReceiver(TopicName, SubscriptionName);
+        var afterProcessorPeek = await afterProcessorReceiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
+        afterProcessorPeek.ShouldBeNull(); // There should be no messages left
     }
 }
