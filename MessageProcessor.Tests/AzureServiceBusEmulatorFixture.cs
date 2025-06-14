@@ -41,5 +41,5 @@ public class AzureServiceBusEmulatorFixture : IAsyncLifetime
             .ConfigureAwait(false);
 
         GC.SuppressFinalize(this);
-    } // Emulator Service is Successfully Up!
+    }
 }
