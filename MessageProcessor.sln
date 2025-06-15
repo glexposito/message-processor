@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageProcessor.Worker", "MessageProcessor.Worker\MessageProcessor.Worker.csproj", "{CEB5CAFA-0146-41A0-B350-2BB5907717C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageProcessor.Tests", "MessageProcessor.Tests\MessageProcessor.Tests.csproj", "{DC72424D-FAA5-480C-89D0-322625F78496}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CEB5CAFA-0146-41A0-B350-2BB5907717C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEB5CAFA-0146-41A0-B350-2BB5907717C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEB5CAFA-0146-41A0-B350-2BB5907717C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEB5CAFA-0146-41A0-B350-2BB5907717C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC72424D-FAA5-480C-89D0-322625F78496}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC72424D-FAA5-480C-89D0-322625F78496}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC72424D-FAA5-480C-89D0-322625F78496}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC72424D-FAA5-480C-89D0-322625F78496}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
