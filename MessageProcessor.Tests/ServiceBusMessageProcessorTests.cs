@@ -61,8 +61,7 @@ public class ServiceBusMessageProcessorTests
     {
         // Arrange
         _wireMockServer.Given(Request.Create().WithPath("/").UsingGet())
-            .RespondWith(Response.Create().WithStatusCode(500)
-                .WithBody("Internal Server Error"));
+            .RespondWith(Response.Create().WithStatusCode(500).WithBody("Internal Server Error"));
 
         var sender = _serviceBusClient.CreateSender(TopicName);
         var message = new ServiceBusMessage("will fail");
