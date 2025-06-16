@@ -4,14 +4,19 @@ using Azure.Messaging.ServiceBus;
 
 public class ServiceBusMessageProcessor : IAsyncDisposable
 {
-    private readonly ServiceBusClient _client;
+    private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusProcessor _processor;
+    private readonly IMyGitHubApiClient _apiClient;
 
-    public ServiceBusMessageProcessor(string connectionString, string topicName, string subscriptionName)
+    public ServiceBusMessageProcessor(
+        ServiceBusClient serviceBusClient, 
+        string topicName, 
+        string subscriptionName,
+        IMyGitHubApiClient apiClient)
     {
-        _client = new ServiceBusClient(connectionString);
+        _serviceBusClient = serviceBusClient;
 
-        _processor = _client.CreateProcessor(topicName, subscriptionName, new ServiceBusProcessorOptions
+        _processor = _serviceBusClient.CreateProcessor(topicName, subscriptionName, new ServiceBusProcessorOptions
         {
             AutoCompleteMessages = false,
             MaxConcurrentCalls = 1
@@ -19,20 +24,8 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 
         _processor.ProcessMessageAsync += HandleMessageAsync;
         _processor.ProcessErrorAsync += HandleErrorAsync;
-    }
-    
-    public ServiceBusMessageProcessor(ServiceBusClient client, string topicName, string subscriptionName)
-    {
-        _client = client;
-
-        _processor = _client.CreateProcessor(topicName, subscriptionName, new ServiceBusProcessorOptions
-        {
-            AutoCompleteMessages = false,
-            MaxConcurrentCalls = 1
-        });
-
-        _processor.ProcessMessageAsync += HandleMessageAsync;
-        _processor.ProcessErrorAsync += HandleErrorAsync;
+        
+        _apiClient = apiClient;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -47,12 +40,14 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
         Console.WriteLine("Service Bus message processor stopped.");
     }
 
-    private static async Task HandleMessageAsync(ProcessMessageEventArgs args)
+    private async Task HandleMessageAsync(ProcessMessageEventArgs args)
     {
         try
         {
             // TODO: Add your business logic here
             Console.WriteLine("Calculating the meaning of life... please wait.");
+            var result = await _apiClient.GetRootAsync();
+            Console.WriteLine(result);
 
             await args.CompleteMessageAsync(args.Message);
         }
@@ -65,7 +60,8 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 
     private static Task HandleErrorAsync(ProcessErrorEventArgs args)
     {
-        Console.WriteLine($"Error in the Service Bus processor: {args.Exception.Message}\nErrorSource: {args.ErrorSource}\nEntity Path: {args.EntityPath}\nNamespace: {args.FullyQualifiedNamespace}");
+        Console.WriteLine(
+            $"Error in the Service Bus processor: {args.Exception.Message}\nErrorSource: {args.ErrorSource}\nEntity Path: {args.EntityPath}\nNamespace: {args.FullyQualifiedNamespace}");
         return Task.CompletedTask;
     }
 
@@ -73,6 +69,6 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
     {
         GC.SuppressFinalize(this);
         await _processor.DisposeAsync();
-        await _client.DisposeAsync();
+        await _serviceBusClient.DisposeAsync();
     }
 }
