@@ -3,7 +3,6 @@
 A .NET solution for processing messages, including a worker service and integration tests.
 
 > **Note:** This project is a proof of concept (POC) for using [Testcontainers](https://github.com/testcontainers/testcontainers-dotnet) with Azure Service Bus.  
-> **Current status:** Integration tests are not working yet.
 
 ## Projects
 
@@ -12,7 +11,7 @@ A .NET solution for processing messages, including a worker service and integrat
   Location: [`MessageProcessor.Worker/`](MessageProcessor.Worker/)
 
 - **MessageProcessor.Tests**  
-  Integration and unit tests for the worker service.  
+  Integration tests for the worker service.  
   Location: [`MessageProcessor.Tests/`](MessageProcessor.Tests/)
 
 ## Getting Started
