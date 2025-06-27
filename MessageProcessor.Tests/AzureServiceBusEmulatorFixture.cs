@@ -27,6 +27,7 @@ public class AzureServiceBusEmulatorFixture : IAsyncLifetime
                     .UntilHttpRequestIsSucceeded(req =>
                         req.ForPort(ServiceBusHttpPort).ForPath("/health")))
             .WithCleanUp(true)
+            .WithPrivileged(true)
             .Build();
     }
     
