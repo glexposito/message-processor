@@ -18,7 +18,7 @@ A .NET solution for processing messages, including a worker service and integrat
 
 ### Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/)
 - Docker (required for running integration tests with Testcontainers)
 
 ### Running Tests
