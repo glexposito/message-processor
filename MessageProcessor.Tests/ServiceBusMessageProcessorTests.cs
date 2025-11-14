@@ -29,55 +29,96 @@ public class ServiceBusMessageProcessorTests
     }
 
     [Fact]
-    public async Task StartAsync_ShouldRemoveMessage_WhenProcessingRunsSuccessfully()
+    public async Task Processor_RemovesMessageFromSubscription_WhenProcessingSucceeds()
     {
         // Arrange
         var sender = _serviceBusClient.CreateSender(TopicName);
-        var message = new ServiceBusMessage("prepopulated message");
-        await sender.SendMessageAsync(message, TestContext.Current.CancellationToken);
+        await sender.SendMessageAsync(
+            new ServiceBusMessage("message"),
+            TestContext.Current.CancellationToken);
 
         _wireMockServer.Given(Request.Create().WithPath("/").UsingGet())
-            .RespondWith(Response.Create().WithStatusCode(200).WithBody("mocked response"));
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithBody("mocked response"));
 
         var receiver = _serviceBusClient.CreateReceiver(TopicName, SubscriptionName);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
-        var peeked = await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
-        peeked.ShouldNotBeNull(); // Ensures at least one message is present
 
         // Act
         await _serviceBusMessageProcessor.StartAsync(TestContext.Current.CancellationToken);
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        // Wait until no messages remain in the subscription
+        await WaitUntilAsync(
+            async () =>
+            {
+                var nextMessage =
+                    await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
+                return nextMessage == null;
+            },
+            timeout: TimeSpan.FromSeconds(10),
+            pollInterval: TimeSpan.FromMilliseconds(50),
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
         await _serviceBusMessageProcessor.StopAsync(TestContext.Current.CancellationToken);
 
-        // Assert: Ensure no more messages remain
-        var afterProcessorReceiver = _serviceBusClient.CreateReceiver(TopicName, SubscriptionName);
-        var afterProcessorPeek =
-            await afterProcessorReceiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
-        afterProcessorPeek.ShouldBeNull(); // There should be no messages left
+        // Assert
+        var remainingMessage = await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
+        remainingMessage.ShouldBeNull();
     }
 
+
     [Fact]
-    public async Task StartAsync_ShouldMoveMessageToDlq_WhenProcessingFails()
+    public async Task Processor_MovesMessageToDeadLetterQueue_WhenProcessingFails()
     {
         // Arrange
         _wireMockServer.Given(Request.Create().WithPath("/").UsingGet())
-            .RespondWith(Response.Create().WithStatusCode(500).WithBody("Internal Server Error"));
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithBody("Internal Server Error"));
 
         var sender = _serviceBusClient.CreateSender(TopicName);
-        var message = new ServiceBusMessage("will fail");
-        await sender.SendMessageAsync(message, TestContext.Current.CancellationToken);
+        await sender.SendMessageAsync(
+            new ServiceBusMessage("will fail"),
+            TestContext.Current.CancellationToken);
+
+        var dlqReceiver = _serviceBusClient.CreateReceiver(
+            TopicName,
+            SubscriptionName,
+            new ServiceBusReceiverOptions
+            {
+                SubQueue = SubQueue.DeadLetter
+            });
 
         // Act
         await _serviceBusMessageProcessor.StartAsync(TestContext.Current.CancellationToken);
-        await Task.Delay(200, TestContext.Current.CancellationToken);
+        
+        var deadLetteredMessage = await dlqReceiver.ReceiveMessageAsync(
+            TimeSpan.FromSeconds(5),
+            TestContext.Current.CancellationToken);
+
         await _serviceBusMessageProcessor.StopAsync(TestContext.Current.CancellationToken);
 
-        // Assert: Check DLQ
-        var dlqReceiver = _serviceBusClient.CreateReceiver(TopicName, SubscriptionName, new ServiceBusReceiverOptions
+        // Assert
+        deadLetteredMessage.ShouldNotBeNull();
+    }
+    
+    private static async Task WaitUntilAsync(
+        Func<Task<bool>> condition,
+        TimeSpan timeout,
+        TimeSpan pollInterval,
+        CancellationToken cancellationToken)
+    {
+        var start = DateTime.UtcNow;
+
+        while (DateTime.UtcNow - start < timeout)
         {
-            SubQueue = SubQueue.DeadLetter
-        });
-        var dlqMessage = await dlqReceiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
-        dlqMessage.ShouldNotBeNull();
+            if (await condition())
+                return;
+
+            await Task.Delay(pollInterval, cancellationToken);
+        }
+
+        throw new TimeoutException("Condition was not met within the timeout.");
     }
 }
