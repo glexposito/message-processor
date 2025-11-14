@@ -4,7 +4,7 @@ public class Worker(ServiceBusMessageProcessor processor) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await processor.StartAsync(stoppingToken);
+        await processor.StartAsync(stoppingToken);  // startup failure should bubble
 
         try
         {
@@ -12,15 +12,12 @@ public class Worker(ServiceBusMessageProcessor processor) : BackgroundService
         }
         catch (TaskCanceledException)
         {
-            // Expected during graceful shutdown, no action needed
+            // expected during shutdown
         }
-
-        await processor.StopAsync(stoppingToken);
-    }
-
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        await processor.DisposeAsync();
-        await base.StopAsync(cancellationToken);
+        finally
+        {
+            await processor.StopAsync(stoppingToken);
+            await processor.DisposeAsync();
+        }
     }
 }
