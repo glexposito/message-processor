@@ -66,8 +66,7 @@ public class ServiceBusMessageProcessorTests
         var remainingMessage = await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
         remainingMessage.ShouldBeNull();
     }
-
-
+    
     [Fact]
     public async Task Processor_MovesMessageToDeadLetterQueue_WhenProcessingFails()
     {
