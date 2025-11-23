@@ -38,19 +38,13 @@
         <PackageReference Include="System.Memory.Data" Version="10.0.0" />
         <PackageReference Include="Testcontainers" Version="4.8.1" />
         <PackageReference Include="Testcontainers.ServiceBus" Version="4.8.1" />
-        <PackageReference Include="WireMock.Net" Version="1.15.0" />
-        <PackageReference Include="WireMock.Net.Minimal" Version="1.15.0" />
+        <PackageReference Include="WireMock.Net" Version="1.16.0" />
+        <PackageReference Include="WireMock.Net.Minimal" Version="1.16.0" />
         <PackageReference Include="xunit.v3" Version="3.2.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Update="Config.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
     <ItemGroup>

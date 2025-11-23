@@ -1,0 +1,79 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/azure-sql-edge
+    container_name: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Str0ngPassw0rd!"
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Str0ngPassw0rd!' -Q 'SELECT 1' || exit 1",
+        ]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 3s
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: servicebus-emulator
+    environment:
+      ACCEPT_EULA: "Y"
+      SQL_SERVER: "sqlserver"
+      MSSQL_SA_PASSWORD: "Str0ngPassw0rd!"
+    volumes:
+      - ./sbus-config.json:/ServiceBus_Emulator/ConfigFiles/Config.json
+    ports:
+      - "5672:5672"
+      - "5671:5671"
+      - "5300:5300"
+      - "443:443"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  servicebus-sentinel:
+    image: curlimages/curl:latest
+    depends_on:
+      servicebus:
+        condition: service_started
+    restart: unless-stopped
+    # Keep this container alive so Docker can run the healthcheck continuously
+    command: ["sh", "-c", "while true; do sleep 5; done"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://servicebus:5300/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  greetings_api:
+    build: ./greetings-api
+    container_name: greetings-api
+    ports:
+      - "3000:3000"
+
+  worker:
+    build: ./MessageProcessor.Worker
+    container_name: message-processor-worker
+    environment:
+      ServiceBusConnectionString: "Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
+    depends_on:
+      servicebus-sentinel:
+        condition: service_healthy
+      greetings_api:
+        condition: service_started
+
+  servicebus-spammer:
+    build:
+      context: ./tools/ServiceBus.Spammer
+      dockerfile: Dockerfile
+    container_name: servicebus-spammer
+    depends_on:
+      servicebus-sentinel:
+        condition: service_healthy
+    restart: unless-stopped

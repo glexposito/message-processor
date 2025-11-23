@@ -1,0 +1,11 @@
+{
+  "name": "greetings-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

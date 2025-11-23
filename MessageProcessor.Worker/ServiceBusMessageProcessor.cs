@@ -6,13 +6,13 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 {
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusProcessor _processor;
-    private readonly IMyGitHubApiClient _apiClient;
+    private readonly IGreetingsClient _greetingsClient;
 
     public ServiceBusMessageProcessor(
-        ServiceBusClient serviceBusClient, 
-        string topicName, 
+        ServiceBusClient serviceBusClient,
+        string topicName,
         string subscriptionName,
-        IMyGitHubApiClient apiClient)
+        IGreetingsClient greetingsClient)
     {
         _serviceBusClient = serviceBusClient;
 
@@ -24,8 +24,8 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 
         _processor.ProcessMessageAsync += HandleMessageAsync;
         _processor.ProcessErrorAsync += HandleErrorAsync;
-        
-        _apiClient = apiClient;
+
+        _greetingsClient = greetingsClient;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -45,8 +45,9 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
         try
         {
             // TODO: Add your business logic here
-            Console.WriteLine("Calculating the meaning of life... please wait.");
-            var result = await _apiClient.GetRootAsync();
+            Console.WriteLine($"Calculating the meaning of life for Message ID {args.Message.MessageId}... please wait.");
+            Console.WriteLine($"Received: {args.Message.Body}");
+            var result = await _greetingsClient.SayHelloAsync();
             Console.WriteLine(result);
 
             await args.CompleteMessageAsync(args.Message);

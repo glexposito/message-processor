@@ -10,7 +10,9 @@ namespace MessageProcessor.Tests;
 [Collection("Worker Collection")]
 public class ServiceBusMessageProcessorTests
 {
+    // Default Topic
     private const string TopicName = "topic.1";
+    // Default Subscription
     private const string SubscriptionName = "subscription.3";
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusMessageProcessor _serviceBusMessageProcessor;
@@ -21,11 +23,11 @@ public class ServiceBusMessageProcessorTests
         _wireMockServer = fixture.WireMockServer;
         var wireMockUrl = _wireMockServer.Url;
         var httpClient = new HttpClient { BaseAddress = new Uri(wireMockUrl!) };
-        IMyGitHubApiClient apiClient = new MyGitHubApiClient(httpClient);
+        IGreetingsClient greetingsClient = new GreetingsClient(httpClient);
 
         _serviceBusClient = new ServiceBusClient(fixture.ConnectionString);
         _serviceBusMessageProcessor =
-            new ServiceBusMessageProcessor(_serviceBusClient, TopicName, SubscriptionName, apiClient);
+            new ServiceBusMessageProcessor(_serviceBusClient, TopicName, SubscriptionName, greetingsClient);
     }
 
     [Fact]
@@ -37,10 +39,10 @@ public class ServiceBusMessageProcessorTests
             new ServiceBusMessage("message"),
             TestContext.Current.CancellationToken);
 
-        _wireMockServer.Given(Request.Create().WithPath("/").UsingGet())
+        _wireMockServer.Given(Request.Create().WithPath("/hello").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
-                .WithBody("mocked response"));
+                .WithBody("Hello!"));
 
         var receiver = _serviceBusClient.CreateReceiver(TopicName, SubscriptionName);
 
@@ -71,7 +73,7 @@ public class ServiceBusMessageProcessorTests
     public async Task Processor_MovesMessageToDeadLetterQueue_WhenProcessingFails()
     {
         // Arrange
-        _wireMockServer.Given(Request.Create().WithPath("/").UsingGet())
+        _wireMockServer.Given(Request.Create().WithPath("/hello").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithBody("Internal Server Error"));

@@ -1,0 +1,30 @@
+{
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "SBEmulatorNS",
+        "Queues": [],
+        "Topics": [
+          {
+            "Name": "topic.1",
+            "Properties": {
+              "DefaultMessageTimeToLive": "PT1H"
+            },
+            "Subscriptions": [
+              {
+                "Name": "subscription.3",
+                "Properties": {
+                  "MaxDeliveryCount": 10,
+                  "LockDuration": "PT1M"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Logging": {
+      "Type": "File"
+    }
+  }
+}

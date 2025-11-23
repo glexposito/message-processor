@@ -1,21 +1,17 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-USER $APP_UID
-WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
+﻿# Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["MessageProcessor.Worker/MessageProcessor.Worker.csproj", "MessageProcessor.Worker/"]
-RUN dotnet restore "MessageProcessor.Worker/MessageProcessor.Worker.csproj"
+
+# Context is MessageProcessor.Worker/, so this copies the project
 COPY . .
-WORKDIR "/src/MessageProcessor.Worker"
-RUN dotnet build "./MessageProcessor.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MessageProcessor.Worker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app /p:UseAppHost=false
 
-FROM base AS final
+# Runtime
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+COPY --from=build /app ./
+
 ENTRYPOINT ["dotnet", "MessageProcessor.Worker.dll"]
