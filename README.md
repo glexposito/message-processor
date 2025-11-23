@@ -33,7 +33,7 @@ It allows you to:
 
 - **ServiceBus.Spammer**  
   A small console tool that sends one message per second.  
-  Location: `tools/servicebus-spammer`
+  Location: `tools`
 
 ---
 
