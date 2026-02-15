@@ -27,20 +27,20 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Azure.Core" Version="1.50.0" />
+        <PackageReference Include="Azure.Core" Version="1.51.1" />
         <PackageReference Include="Azure.Core.Amqp" Version="1.3.1" />
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
         <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.0" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
         <PackageReference Include="Moq" Version="4.20.72" />
         <PackageReference Include="Shouldly" Version="4.3.0" />
-        <PackageReference Include="System.Memory.Data" Version="10.0.0" />
-        <PackageReference Include="Testcontainers" Version="4.9.0" />
-        <PackageReference Include="Testcontainers.ServiceBus" Version="4.9.0" />
-        <PackageReference Include="WireMock.Net" Version="1.16.0" />
-        <PackageReference Include="WireMock.Net.Minimal" Version="1.16.0" />
-        <PackageReference Include="xunit.v3" Version="3.2.1" />
+        <PackageReference Include="System.Memory.Data" Version="10.0.3" />
+        <PackageReference Include="Testcontainers" Version="4.10.0" />
+        <PackageReference Include="Testcontainers.ServiceBus" Version="4.10.0" />
+        <PackageReference Include="WireMock.Net" Version="1.25.0" />
+        <PackageReference Include="WireMock.Net.Minimal" Version="1.25.0" />
+        <PackageReference Include="xunit.v3" Version="3.2.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
