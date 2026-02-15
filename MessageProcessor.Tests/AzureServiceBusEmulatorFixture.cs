@@ -12,21 +12,23 @@ public class AzureServiceBusEmulatorFixture : IAsyncLifetime
     private const ushort ServiceBusPort = 5672;
     private const ushort ServiceBusHttpPort = 5300;
 
-    private readonly ServiceBusContainer _serviceBusContainer = new ServiceBusBuilder()
-        .WithAcceptLicenseAgreement(true)
-        .WithPortBinding(ServiceBusPort, ServiceBusPort)
-        .WithPortBinding(ServiceBusHttpPort, ServiceBusHttpPort)
-        .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
-        // ReSharper disable once StringLiteralTypo
-        .WithName("azure-servicebus-emulator")
-        .WithLabel("purpose", "integration-test")
-        .WithWaitStrategy(
-            Wait.ForUnixContainer()
-                .UntilMessageIsLogged(".*Emulator Service is Successfully Up!.*")
-        )
-        .WithCleanUp(true)
-        .WithPrivileged(true)
-        .Build();
+    // ReSharper disable once StringLiteralTypo
+    private readonly ServiceBusContainer _serviceBusContainer =
+        new ServiceBusBuilder("mcr.microsoft.com/azure-messaging/servicebus-emulator:latest")
+            .WithAcceptLicenseAgreement(true)
+            .WithPortBinding(ServiceBusPort, ServiceBusPort)
+            .WithPortBinding(ServiceBusHttpPort, ServiceBusHttpPort)
+            .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
+            // ReSharper disable once StringLiteralTypo
+            .WithName("azure-servicebus-emulator")
+            .WithLabel("purpose", "integration-test")
+            .WithWaitStrategy(
+                Wait.ForUnixContainer()
+                    .UntilMessageIsLogged(".*Emulator Service is Successfully Up!.*")
+            )
+            .WithCleanUp(true)
+            .WithPrivileged(true)
+            .Build();
 
     // ReSharper disable once StringLiteralTypo
     public WireMockServer WireMockServer { get; private set; }
