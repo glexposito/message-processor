@@ -37,7 +37,7 @@ services:
         condition: service_healthy
 
   servicebus-sentinel:
-    image: curlimages/curl:latest
+    image: docker.io/curlimages/curl:latest
     container_name: servicebus-sentinel
     depends_on:
       servicebus:
