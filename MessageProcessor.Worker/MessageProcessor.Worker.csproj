@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Azure.Core" Version="1.51.1" />
+      <PackageReference Include="Azure.Core" Version="1.52.0" />
       <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.2" />
       <PackageReference Include="System.Memory.Data" Version="10.0.5" />
       <Content Include="..\.dockerignore">
