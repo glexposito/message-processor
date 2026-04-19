@@ -10,14 +10,14 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Azure.Core" Version="1.53.0" />
       <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.2" />
-      <PackageReference Include="System.Memory.Data" Version="10.0.5" />
+      <PackageReference Include="System.Memory.Data" Version="10.0.6" />
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
