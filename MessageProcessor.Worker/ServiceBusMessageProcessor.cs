@@ -66,7 +66,7 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
             _logger.LogInformation("Calculating the meaning of life for Message ID {MessageId}... please wait.", args.Message.MessageId);
             _logger.LogInformation("Received: {Body}", args.Message.Body);
             var result = await _greetingsClient.SayHelloAsync();
-            _logger.LogInformation("{Result}", result);
+            _logger.LogInformation("Greeting result: {Result}", result);
 
             await args.CompleteMessageAsync(args.Message);
         }
