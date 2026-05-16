@@ -121,12 +121,6 @@ docker compose -f signoz/deploy/docker/docker-compose.yaml up -d
 docker network connect signoz-network signoz-otel-collector
 ```
 
-**3. Start this stack**
-
-```bash
-docker compose up -d
-```
-
 Open `http://localhost:8080` — your worker will appear under **Services** once it starts processing messages.
 
 ### How distributed tracing works here
