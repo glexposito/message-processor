@@ -1,18 +1,21 @@
 namespace MessageProcessor.Worker;
 
 using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Logging;
 
 public class ServiceBusMessageProcessor : IAsyncDisposable
 {
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusProcessor _processor;
     private readonly IGreetingsClient _greetingsClient;
+    private readonly ILogger<ServiceBusMessageProcessor> _logger;
 
     public ServiceBusMessageProcessor(
         ServiceBusClient serviceBusClient,
         string topicName,
         string subscriptionName,
-        IGreetingsClient greetingsClient)
+        IGreetingsClient greetingsClient,
+        ILogger<ServiceBusMessageProcessor> logger)
     {
         _serviceBusClient = serviceBusClient;
 
@@ -26,18 +29,19 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
         _processor.ProcessErrorAsync += HandleErrorAsync;
 
         _greetingsClient = greetingsClient;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await _processor.StartProcessingAsync(cancellationToken);
-        Console.WriteLine("Service Bus message processor started.");
+        _logger.LogInformation("Service Bus message processor started.");
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         await _processor.StopProcessingAsync(cancellationToken);
-        Console.WriteLine("Service Bus message processor stopped.");
+        _logger.LogInformation("Service Bus message processor stopped.");
     }
 
     private async Task HandleMessageAsync(ProcessMessageEventArgs args)
@@ -45,24 +49,28 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
         try
         {
             // TODO: Add your business logic here
-            Console.WriteLine($"Calculating the meaning of life for Message ID {args.Message.MessageId}... please wait.");
-            Console.WriteLine($"Received: {args.Message.Body}");
+            _logger.LogInformation("Calculating the meaning of life for Message ID {MessageId}... please wait.", args.Message.MessageId);
+            _logger.LogInformation("Received: {Body}", args.Message.Body);
             var result = await _greetingsClient.SayHelloAsync();
-            Console.WriteLine(result);
+            _logger.LogInformation("{Result}", result);
 
             await args.CompleteMessageAsync(args.Message);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception in HandleMessageAsync: {ex.Message}\n{ex.StackTrace}");
+            _logger.LogError(ex, "Exception in HandleMessageAsync for Message ID {MessageId}.", args.Message.MessageId);
             await args.DeadLetterMessageAsync(args.Message);
         }
     }
 
-    private static Task HandleErrorAsync(ProcessErrorEventArgs args)
+    private Task HandleErrorAsync(ProcessErrorEventArgs args)
     {
-        Console.WriteLine(
-            $"Error in the Service Bus processor: {args.Exception.Message}\nErrorSource: {args.ErrorSource}\nEntity Path: {args.EntityPath}\nNamespace: {args.FullyQualifiedNamespace}");
+        _logger.LogError(
+            args.Exception,
+            "Error in the Service Bus processor. ErrorSource: {ErrorSource}, Entity Path: {EntityPath}, Namespace: {Namespace}",
+            args.ErrorSource,
+            args.EntityPath,
+            args.FullyQualifiedNamespace);
         return Task.CompletedTask;
     }
 

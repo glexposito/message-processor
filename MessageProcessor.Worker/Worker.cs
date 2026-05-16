@@ -16,7 +16,8 @@ public class Worker(ServiceBusMessageProcessor processor) : BackgroundService
         }
         finally
         {
-            await processor.StopAsync(stoppingToken);
+            using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await processor.StopAsync(shutdownCts.Token);
             await processor.DisposeAsync();
         }
     }

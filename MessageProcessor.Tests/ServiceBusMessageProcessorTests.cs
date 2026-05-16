@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using MessageProcessor.Worker;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 using WireMock.Server;
 using WireMock.RequestBuilders;
@@ -21,13 +22,15 @@ public class ServiceBusMessageProcessorTests
     public ServiceBusMessageProcessorTests(AzureServiceBusEmulatorFixture fixture)
     {
         _wireMockServer = fixture.WireMockServer;
+        _wireMockServer.Reset();
         var wireMockUrl = _wireMockServer.Url;
         var httpClient = new HttpClient { BaseAddress = new Uri(wireMockUrl!) };
         IGreetingsClient greetingsClient = new GreetingsClient(httpClient);
 
         _serviceBusClient = new ServiceBusClient(fixture.ConnectionString);
         _serviceBusMessageProcessor =
-            new ServiceBusMessageProcessor(_serviceBusClient, TopicName, SubscriptionName, greetingsClient);
+            new ServiceBusMessageProcessor(_serviceBusClient, TopicName, SubscriptionName, greetingsClient,
+                NullLogger<ServiceBusMessageProcessor>.Instance);
     }
 
     [Fact]

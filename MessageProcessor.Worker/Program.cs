@@ -32,6 +32,7 @@ builder.Services.AddSingleton<ServiceBusMessageProcessor>(sp =>
 {
     var sbClient = sp.GetRequiredService<ServiceBusClient>();
     var apiClient = sp.GetRequiredService<IGreetingsClient>();
+    var logger = sp.GetRequiredService<ILogger<ServiceBusMessageProcessor>>();
 
     var topicName = configuration["ServiceBus:TopicName"]
                     ?? throw new InvalidOperationException("ServiceBus:TopicName is not configured.");
@@ -39,7 +40,7 @@ builder.Services.AddSingleton<ServiceBusMessageProcessor>(sp =>
     var subscriptionName = configuration["ServiceBus:SubscriptionName"]
                            ?? throw new InvalidOperationException("ServiceBus:SubscriptionName is not configured.");
 
-    return new ServiceBusMessageProcessor(sbClient, topicName, subscriptionName, apiClient);
+    return new ServiceBusMessageProcessor(sbClient, topicName, subscriptionName, apiClient, logger);
 });
 
 // Hosted worker
