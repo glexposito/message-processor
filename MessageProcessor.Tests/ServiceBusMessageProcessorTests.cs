@@ -9,7 +9,7 @@ using WireMock.ResponseBuilders;
 namespace MessageProcessor.Tests;
 
 [Collection("Worker Collection")]
-public class ServiceBusMessageProcessorTests
+public class ServiceBusMessageProcessorTests : IAsyncDisposable
 {
     // Default Topic
     private const string TopicName = "topic.1";
@@ -107,6 +107,12 @@ public class ServiceBusMessageProcessorTests
         deadLetteredMessage.ShouldNotBeNull();
     }
     
+    public async ValueTask DisposeAsync()
+    {
+        await _serviceBusMessageProcessor.DisposeAsync();
+        await _serviceBusClient.DisposeAsync();
+    }
+
     private static async Task WaitUntilAsync(
         Func<Task<bool>> condition,
         TimeSpan timeout,
