@@ -50,6 +50,12 @@ It allows you to:
 From the folder that contains `docker-compose.yaml`:
 
 ```bash
+docker network create signoz-network
+```
+
+Then start the stack:
+
+```bash
 docker compose up -d
 ```
 
@@ -106,13 +112,12 @@ Traces, metrics, and logs are exported via OpenTelemetry. To view them locally, 
 
 ```bash
 git clone -b main https://github.com/SigNoz/signoz.git
-docker compose -f signoz/deploy/docker/clickhouse-setup/docker-compose.yaml up -d
+docker compose -f signoz/deploy/docker/docker-compose.yaml up -d
 ```
 
-**2. Create the shared network and connect SigNoz's collector**
+**2. Connect SigNoz's collector to the shared network**
 
 ```bash
-docker network create signoz-network
 docker network connect signoz-network signoz-otel-collector
 ```
 
