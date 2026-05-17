@@ -1,5 +1,9 @@
 using Azure.Messaging.ServiceBus;
 using MessageProcessor.Worker;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 var builder = Host.CreateApplicationBuilder(args);
 var configuration = builder.Configuration;
@@ -42,6 +46,19 @@ builder.Services.AddSingleton<ServiceBusMessageProcessor>(sp =>
 
     return new ServiceBusMessageProcessor(sbClient, topicName, subscriptionName, apiClient, logger);
 });
+
+// OpenTelemetry – traces, metrics, logs
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("message-processor"))
+    .WithTracing(t => t
+        .AddSource("MessageProcessor.Worker")
+        .AddSource("Azure.Messaging.ServiceBus")
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter())
+    .WithMetrics(m => m
+        .AddOtlpExporter());
+
+builder.Logging.AddOpenTelemetry(l => l.AddOtlpExporter());
 
 // Hosted worker
 builder.Services.AddHostedService<Worker>();

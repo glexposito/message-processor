@@ -1,10 +1,13 @@
 namespace MessageProcessor.Worker;
 
+using System.Diagnostics;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 
 public class ServiceBusMessageProcessor : IAsyncDisposable
 {
+    private static readonly ActivitySource ActivitySource = new("MessageProcessor.Worker");
+
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ServiceBusProcessor _processor;
     private readonly IGreetingsClient _greetingsClient;
@@ -46,6 +49,17 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 
     private async Task HandleMessageAsync(ProcessMessageEventArgs args)
     {
+        ActivityContext parentContext = default;
+        if (args.Message.ApplicationProperties.TryGetValue("traceparent", out var traceparentObj)
+            && traceparentObj is string traceparent)
+        {
+            ActivityContext.TryParse(traceparent, null, isRemote: true, out parentContext);
+        }
+
+        using var activity = ActivitySource.StartActivity("process message", ActivityKind.Consumer, parentContext);
+        activity?.SetTag("messaging.message_id", args.Message.MessageId);
+        activity?.SetTag("messaging.system", "servicebus");
+
         try
         {
             // TODO: Add your business logic here
@@ -58,6 +72,7 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Exception in HandleMessageAsync for Message ID {MessageId}.", args.Message.MessageId);
             await args.DeadLetterMessageAsync(args.Message);
         }

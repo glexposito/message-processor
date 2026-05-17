@@ -63,18 +63,34 @@ services:
     container_name: message-processor-worker
     environment:
       ServiceBusConnectionString: "Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-otel-collector:4317"
     depends_on:
       servicebus-sentinel:
         condition: service_healthy
       greetings-api:
         condition: service_started
+    networks:
+      - default
+      - signoz-network
 
   servicebus-spammer:
     build:
       context: ./tools/ServiceBus.Spammer
       dockerfile: Dockerfile
     container_name: servicebus-spammer
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-otel-collector:4317"
     depends_on:
       servicebus-sentinel:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - default
+      - signoz-network
+
+networks:
+  default:
+    driver: bridge
+  signoz-network:
+    external: true
+    name: signoz-network

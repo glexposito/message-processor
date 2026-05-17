@@ -13,6 +13,7 @@ This repository is a proof of concept for building and testing a **message-drive
 - ✅ Testcontainers for .NET
 - ✅ Docker Compose
 - ✅ .NET Worker Service
+- ✅ OpenTelemetry (traces, metrics, logs) with SigNoz
 
 It allows you to:
 
@@ -46,7 +47,7 @@ It allows you to:
 
 ## Run the full environment
 
-From the folder that contains \`docker-compose.yml\`:
+From the folder that contains `docker-compose.yaml`:
 
 ```bash
 docker compose up -d
@@ -87,16 +88,61 @@ docker logs -f message-processor-worker
 You should see:
 
 ```
-...
-Calculating the meaning of life for Message ID fc23a7a9-bbca-4af0-bc4b-86d2517b0c13... please wait.
-Received: Message 1326 @ 2025-11-23T03:17:05.7212890Z
-...
+info: MessageProcessor.Worker.ServiceBusMessageProcessor[0]
+      Calculating the meaning of life for Message ID fc23a7a9-bbca-4af0-bc4b-86d2517b0c13... please wait.
+info: MessageProcessor.Worker.ServiceBusMessageProcessor[0]
+      Received: Message 1326 @ 2025-11-23T03:17:05.7212890Z
 ```
 
 Leave this terminal open — it is your **live processing feed**.
 
 ---
 
+## Observability with SigNoz (optional)
+
+Traces, metrics, and logs are exported via OpenTelemetry. To view them locally, run SigNoz alongside this stack.
+
+**1. Clone and start SigNoz**
+
+```bash
+git clone -b main https://github.com/SigNoz/signoz.git
+docker compose -f signoz/deploy/docker/clickhouse-setup/docker-compose.yaml up -d
+```
+
+**2. Create the shared network and connect SigNoz's collector**
+
+```bash
+docker network create signoz-network
+docker network connect signoz-network signoz-otel-collector
+```
+
+**3. Start this stack**
+
+```bash
+docker compose up -d
+```
+
+Open `http://localhost:8080` — your worker will appear under **Services** once it starts processing messages.
+
+### How distributed tracing works here
+
+Each message flows through two services. OpenTelemetry tracks the full journey as a single **trace**:
+
+```
+traceId: abc123  ← shared by all spans
+
+spanId: 111  parentId: (none)  "send message"     ← servicebus-spammer (root)
+spanId: 222  parentId: 111     "process message"  ← message-processor  (child)
+spanId: 333  parentId: 222     "GET"              ← message-processor  (child)
+```
+
+- **traceId** — groups all spans into one trace
+- **spanId** — identifies each unit of work
+- **parentId** — builds the parent/child tree
+
+The spammer injects the `traceparent` header into the Service Bus message properties. The worker extracts it and uses it as the parent of its own span — this is how SigNoz can render the full flow across two separate services in one flamegraph.
+
+---
 
 ## Run integration tests
 
