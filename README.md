@@ -1,10 +1,5 @@
 # Message Processor
 
-> **POC:** A fun, practical way to play with the **Azure Service Bus Emulator + Testcontainers for .NET** and see real messages flowing through a local, containerized, event-driven system.  
-> Spin it up. Spam it with events. Watch the worker process them. Magic. 🪄
-
----
-
 ## What this project is about
 
 This repository is a proof of concept for building and testing a **message-driven .NET worker** using:
