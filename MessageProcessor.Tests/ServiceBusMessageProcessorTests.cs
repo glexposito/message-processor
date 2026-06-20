@@ -9,7 +9,7 @@ using WireMock.ResponseBuilders;
 namespace MessageProcessor.Tests;
 
 [Collection("Worker Collection")]
-public class ServiceBusMessageProcessorTests : IAsyncDisposable
+public class ServiceBusMessageProcessorTests : IAsyncLifetime
 {
     // Default Topic
     private const string TopicName = "topic.1";
@@ -31,6 +31,17 @@ public class ServiceBusMessageProcessorTests : IAsyncDisposable
         _serviceBusMessageProcessor =
             new ServiceBusMessageProcessor(_serviceBusClient, TopicName, SubscriptionName, greetingsClient,
                 NullLogger<ServiceBusMessageProcessor>.Instance);
+    }
+
+    public async ValueTask InitializeAsync()
+    {
+        await DrainSubscriptionAsync(
+            new ServiceBusReceiverOptions(),
+            TestContext.Current.CancellationToken);
+
+        await DrainSubscriptionAsync(
+            new ServiceBusReceiverOptions { SubQueue = SubQueue.DeadLetter },
+            TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -111,6 +122,28 @@ public class ServiceBusMessageProcessorTests : IAsyncDisposable
     {
         await _serviceBusMessageProcessor.DisposeAsync();
         await _serviceBusClient.DisposeAsync();
+    }
+
+    private async Task DrainSubscriptionAsync(
+        ServiceBusReceiverOptions receiverOptions,
+        CancellationToken cancellationToken)
+    {
+        await using var receiver = _serviceBusClient.CreateReceiver(
+            TopicName,
+            SubscriptionName,
+            receiverOptions);
+
+        while (true)
+        {
+            var message = await receiver.ReceiveMessageAsync(
+                TimeSpan.FromMilliseconds(200),
+                cancellationToken);
+
+            if (message is null)
+                return;
+
+            await receiver.CompleteMessageAsync(message, cancellationToken);
+        }
     }
 
     private static async Task WaitUntilAsync(
