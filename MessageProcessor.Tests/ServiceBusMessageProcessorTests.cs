@@ -63,14 +63,10 @@ public class ServiceBusMessageProcessorTests : IAsyncLifetime
         // Act
         await _serviceBusMessageProcessor.StartAsync(TestContext.Current.CancellationToken);
 
-        // Wait until no messages remain in the subscription
+        // Wait until the processor has handled the message.
         await WaitUntilAsync(
-            async () =>
-            {
-                var nextMessage =
-                    await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
-                return nextMessage == null;
-            },
+            () => Task.FromResult(_wireMockServer.LogEntries.Any(entry =>
+                entry.RequestMessage is { Path: "/hello", Method: "GET" })),
             timeout: TimeSpan.FromSeconds(10),
             pollInterval: TimeSpan.FromMilliseconds(50),
             cancellationToken: TestContext.Current.CancellationToken
@@ -79,7 +75,9 @@ public class ServiceBusMessageProcessorTests : IAsyncLifetime
         await _serviceBusMessageProcessor.StopAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        var remainingMessage = await receiver.PeekMessageAsync(1, TestContext.Current.CancellationToken);
+        var remainingMessage = await receiver.ReceiveMessageAsync(
+            TimeSpan.FromSeconds(1),
+            TestContext.Current.CancellationToken);
         remainingMessage.ShouldBeNull();
     }
     
