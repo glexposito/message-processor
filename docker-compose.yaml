@@ -63,7 +63,7 @@ services:
     container_name: message-processor-worker
     environment:
       ServiceBusConnectionString: "Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-otel-collector:4317"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-ingester:4317"
     depends_on:
       servicebus-sentinel:
         condition: service_healthy
@@ -79,7 +79,7 @@ services:
       dockerfile: Dockerfile
     container_name: servicebus-spammer
     environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-otel-collector:4317"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-ingester:4317"
     depends_on:
       servicebus-sentinel:
         condition: service_healthy
