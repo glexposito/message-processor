@@ -124,49 +124,18 @@ Leave this terminal open — it is your **live processing feed**.
 Traces, metrics, and logs are exported via OpenTelemetry. To view them locally, run
 SigNoz alongside this stack.
 
-> **Note:** SigNoz no longer ships `deploy/docker/docker-compose.yaml`, and `install.sh`
-> is now a stub that prints a deprecation notice and exits successfully without
-> installing anything. Installation goes through **Foundry**.
+Install and start SigNoz by following SigNoz's own guide:
+**https://signoz.io/docs/install/docker/** (Docker Compose via Foundry). We use a
+`signoz/` directory at the repo root for this (matches `.gitignore`). The rest of this
+section only covers what's specific to making SigNoz coexist with *this* repo's stack —
+it assumes you've already generated `signoz/pours/deployment/compose.yaml` per that
+guide.
 
-**1. Install Foundry**
-
-```bash
-curl -fsSL https://signoz.io/foundry.sh | bash
-```
-
-**2. Write a casting file**
-
-Create `signoz/casting.yaml` (any directory works — Foundry generates its output
-relative to this file):
-
-```yaml
-apiVersion: v1alpha1
-kind: Installation
-metadata:
-  name: signoz
-spec:
-  deployment:
-    flavor: compose
-    mode: docker
-```
-
-**3. Generate the manifests**
-
-```bash
-cd signoz
-foundryctl forge -f casting.yaml
-```
-
-This writes `pours/deployment/compose.yaml` without touching any containers, so it is
-safe to re-run — but note that it **fully regenerates the file from scratch**, silently
-wiping any manual edits (including the network patch below). Redo step 4 every time you
-re-run `forge`.
-
-**4. Patch the network to be external**
+**1. Patch the network to be external**
 
 The generated compose declares `signoz-network` as its own. Since our stack created it
-first, mark it external in `pours/deployment/compose.yaml` so either stack can start in
-any order:
+first, mark it external in `signoz/pours/deployment/compose.yaml` so either stack can
+start in any order:
 
 ```yaml
 networks:
@@ -183,10 +152,10 @@ concrete tag — `latest` makes this PoC non-reproducible across rebuilds.
 > will try to (re)create `signoz-network` as its own, which fails or conflicts if this
 > stack already created it externally.
 
-**5. Start SigNoz**
+**2. Start SigNoz**
 
 ```bash
-docker compose -f pours/deployment/compose.yaml up -d
+docker compose -f signoz/pours/deployment/compose.yaml up -d
 ```
 
 Open `http://localhost:8080` — your worker will appear under **Services** once it starts
