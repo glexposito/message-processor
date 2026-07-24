@@ -41,6 +41,8 @@ while (true)
 
         if (activity != null)
         {
+            // "traceparent" is our own convention, not Service Bus's native
+            // Diagnostic-Id property — see README "How distributed tracing works here".
             message.ApplicationProperties["traceparent"] =
                 $"00-{activity.TraceId.ToHexString()}-{activity.SpanId.ToHexString()}-01";
             activity.SetTag("messaging.message_id", message.MessageId);

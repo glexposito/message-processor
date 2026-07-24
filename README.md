@@ -232,6 +232,13 @@ The spammer injects the `traceparent` header into the Service Bus message proper
 The worker extracts it and uses it as the parent of its own span — this is how SigNoz
 can render the full flow across two separate services in one flamegraph.
 
+> `traceparent` here is a property **we** define and propagate by hand — it is not
+> something `Azure.Messaging.ServiceBus` sets or reads natively. The SDK's own
+> convention for this is a differently-named property, `Diagnostic-Id`, and it's only
+> populated when you opt into the SDK's experimental native tracing support. We do it
+> manually instead so the propagation mechanism stays visible in this PoC's code rather
+> than hidden inside the SDK.
+
 ---
 
 ## Run integration tests

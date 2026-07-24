@@ -49,6 +49,8 @@ public class ServiceBusMessageProcessor : IAsyncDisposable
 
     private async Task HandleMessageAsync(ProcessMessageEventArgs args)
     {
+        // "traceparent" is our own convention (see ServiceBus.Spammer/Program.cs), not
+        // Service Bus's native Diagnostic-Id property.
         ActivityContext parentContext = default;
         if (args.Message.ApplicationProperties.TryGetValue("traceparent", out var traceparentObj)
             && traceparentObj is string traceparent)
