@@ -12,13 +12,13 @@
         <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.18.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Azure.Core" Version="1.61.0" />
+      <PackageReference Include="Azure.Core" Version="1.62.0" />
       <PackageReference Include="Microsoft.Azure.Amqp" Version="2.7.3" />
       <PackageReference Include="System.Memory.Data" Version="10.0.11" />
       <Content Include="..\.dockerignore">
