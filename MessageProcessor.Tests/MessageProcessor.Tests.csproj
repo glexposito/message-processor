@@ -36,10 +36,10 @@
         <PackageReference Include="Moq" Version="4.21.0" />
         <PackageReference Include="Shouldly" Version="4.3.0" />
         <PackageReference Include="System.Memory.Data" Version="11.0.0" />
-        <PackageReference Include="Testcontainers" Version="4.16.0" />
-        <PackageReference Include="Testcontainers.ServiceBus" Version="4.16.0" />
-        <PackageReference Include="WireMock.Net" Version="2.31.0" />
-        <PackageReference Include="WireMock.Net.Minimal" Version="2.31.0" />
+        <PackageReference Include="Testcontainers" Version="4.17.0" />
+        <PackageReference Include="Testcontainers.ServiceBus" Version="4.17.0" />
+        <PackageReference Include="WireMock.Net" Version="2.32.0" />
+        <PackageReference Include="WireMock.Net.Minimal" Version="2.32.0" />
         <PackageReference Include="xunit.v3" Version="4.0.3" />
         <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
           <PrivateAssets>all</PrivateAssets>
